@@ -1,5 +1,2 @@
-#《机器学习实战》
+# TensorFlow的Example和Model注释
 
-源码的更详细的注释
-
-保证较新版本能运行
