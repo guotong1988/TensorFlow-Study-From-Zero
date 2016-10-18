@@ -66,7 +66,7 @@ def BiRNN(x, weights, biases):
     # 后向的 cell
     lstm_bw_cell = tf.nn.rnn_cell.BasicLSTMCell(n_hidden, forget_bias=1.0)
 
-    # 得到 lstm cell 输出
+    # 得到 lstm cell 的输出
     outputs, _, _ = tf.nn.bidirectional_rnn(lstm_fw_cell, lstm_bw_cell, x,
                                             dtype=tf.float32)
 
