@@ -46,7 +46,7 @@ biases = {
 
 #https://img3.doubanio.com/view/photo/photo/public/p2390342585.jpg
 #这幅图取自97年的BRNN的原论文
-#根据这幅图所示，这个函数才是实现了完整的 输入->Y序列
+#根据这幅图所示，这个函数才是实现了完整的 输入->Y序列 ，而不是一个tf.nn.bidirectional_rnn方法
 #根据这幅图所示，所以tf.nn.bidirectional_rnn返回的output是256维
 def BiRNN(x, weights, biases):
 
