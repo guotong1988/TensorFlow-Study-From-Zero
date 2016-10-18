@@ -29,11 +29,10 @@ n_steps = 28 # timesteps -- 感觉因为是RNN，所以会有这个概念  --每
 n_hidden = 128 # hidden layer num of features
 n_classes = 10 # MNIST total classes (0-9 digits)
 
-# tf Graph input
-x = tf.placeholder("float", [None, n_steps, n_input])
+x = tf.placeholder("float", [None, n_steps, n_input])#设置成None？？？
 y = tf.placeholder("float", [None, n_classes])
 
-# Define weights
+# 定义 W和b
 weights = {
     # 使用 2*n_hidden 因为 foward + backward cells
     'hidden': tf.Variable(tf.random_normal([n_input, 2*n_hidden])),
