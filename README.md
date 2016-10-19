@@ -1,2 +1,2 @@
-# TensorFlow的Example和Model注释
+# TensorFlow的Example和Model注释,arXiv论文实现的中文注释
 争取每周更新一次
