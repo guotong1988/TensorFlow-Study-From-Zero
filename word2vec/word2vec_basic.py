@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -124,8 +125,8 @@ graph = tf.Graph()
 with graph.as_default():
 
   # Input data.
-  train_inputs = tf.placeholder(tf.int32, shape=[batch_size])
-  train_labels = tf.placeholder(tf.int32, shape=[batch_size, 1])
+  train_inputs = tf.placeholder(tf.int32, shape=[batch_size])    # batch_size个 中间的词
+  train_labels = tf.placeholder(tf.int32, shape=[batch_size, 1]) # batch_size个 中间的词 的 两边的词
   valid_dataset = tf.constant(valid_examples, dtype=tf.int32)
 
   # Ops and variables pinned to the CPU because of missing GPU implementation
@@ -145,12 +146,12 @@ with graph.as_default():
   # tf.nce_loss automatically draws a new sample of the negative labels each
   # time we evaluate the loss.
   loss = tf.reduce_mean(
-      tf.nn.nce_loss(weights=nce_weights,
-                     biases=nce_biases,
-                     labels=train_labels,
-                     inputs=embed,
-                     num_sampled=num_sampled,
-                     num_classes=vocabulary_size))
+      tf.nn.nce_loss(weights=nce_weights,          # shape是[vocabulary_size, embedding_size]
+                     biases=nce_biases,            # shape是[vocabulary_size]
+                     labels=train_labels,          # shape是[batch_size, 1]
+                     inputs=embed,                 # shape是[batch_size, embedding_size]
+                     num_sampled=num_sampled,      # 值是num_sampled
+                     num_classes=vocabulary_size)) # 值是vocabulary_size
 
   # Construct the SGD optimizer using a learning rate of 1.0.
   optimizer = tf.train.GradientDescentOptimizer(1.0).minimize(loss)
