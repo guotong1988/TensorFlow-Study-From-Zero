@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# https://github.com/jikexueyuanwiki/tensorflow-zh/blob/master/SOURCE/tutorials/word2vec.md#skip-gram-模型 
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
