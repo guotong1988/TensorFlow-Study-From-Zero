@@ -55,12 +55,16 @@ class Model:
     def create_train(self, lenW, n_facts):
         ONE = theano.shared(np.float32(1))
         ZERO = theano.shared(np.float32(0))
+
+        # 仔细看这三个函数，就是搞成等长的 
         def phi_x1(x_t, L):  # 公式(5)的
             return T.concatenate([L[x_t].reshape((-1,)), zeros((2*lenW,)), zeros((3,))], axis=0)
         def phi_x2(x_t, L):  # 公式(5)的
             return T.concatenate([zeros((lenW,)), L[x_t].reshape((-1,)), zeros((lenW,)), zeros((3,))], axis=0)
         def phi_y(x_t, L):   # 公式(5)的
             return T.concatenate([zeros((2*lenW,)), L[x_t].reshape((-1,)), zeros((3,))], axis=0)
+
+
         def phi_t(x_t, y_t, yp_t, L): # 公式(10)的，可见yp_t的意思
             return T.concatenate([zeros(3*lenW,), T.stack(T.switch(T.lt(x_t,y_t), ONE, ZERO), T.switch(T.lt(x_t,yp_t), ONE, ZERO), T.switch(T.lt(y_t,yp_t), ONE, ZERO))], axis=0)
         def s_Ot(xs, y_t, yp_t, L):  # 就是论文里的s右下角O右下角t，公式(3)的
@@ -84,18 +88,20 @@ class Model:
         f = [T.iscalar('f%d_t' % i) for i in xrange(n_facts)]  # 公式(6)(7)的
         r_t = T.iscalar('r_t')  # 公式(8)的
         gamma = T.scalar('gamma')
-        L = T.fmatrix('L') # list of messages
-        V = T.fmatrix('V') # vocab
+        L = T.fmatrix('L') # list of messages 多个向量 每个代表一句话
+        V = T.fmatrix('V') # vocab 多个向量 每个代表一个词
         r_args = T.stack(*m)
 
         cost_arr = [0] * 2 * (len(m)-1)
         for i in xrange(len(m)-1):
             cost_arr[2*i], _ = theano.scan(  # 就是公式(6)
-                    lambda f_bar, t: T.switch(T.or_(T.eq(t, f[i]), T.eq(t, T.shape(L)[0]-1)), 0, T.largest(gamma - s_Ot(T.stack(*m[:i+1]), f[i], t, L), 0)),
+                    lambda f_bar, t: T.switch(T.or_(T.eq(t, f[i]), T.eq(t, T.shape(L)[0]-1)), 0, T.largest(gamma - s_Ot(T.stack(*m[:i+1]), # T.stack(*m[:i+1])应该就是之前的记忆
+					f[i], t, L), 0)),
                     sequences=[L, T.arange(T.shape(L)[0])])
             cost_arr[2*i] /= T.shape(L)[0]
             cost_arr[2*i+1], _ = theano.scan(  # 就是公式(7)
-                    lambda f_bar, t: T.switch(T.or_(T.eq(t, f[i]), T.eq(t, T.shape(L)[0]-1)), 0, T.largest(gamma + s_Ot(T.stack(*m[:i+1]), t, f[i], L), 0)),
+                    lambda f_bar, t: T.switch(T.or_(T.eq(t, f[i]), T.eq(t, T.shape(L)[0]-1)), 0, T.largest(gamma + s_Ot(T.stack(*m[:i+1]), # T.stack(*m[:i+1])应该就是之前的记忆
+					t, f[i], L), 0)),
                     sequences=[L, T.arange(T.shape(L)[0])])
             cost_arr[2*i+1] /= T.shape(L)[0]
 
@@ -109,9 +115,9 @@ class Model:
             cost += c.sum()
 
         updates = sgd(cost, [self.U_Ot, self.U_R], learning_rate=self.lr)
-
+        # print([r_t, gamma, L, V] + m + f) # 实际上是 [r_t, gamma, L, V, x_t, m_o0, f0_t]
         self.train_model = theano.function(
-            inputs=[r_t, gamma, L, V] + m + f,
+            inputs=[r_t, gamma, L, V] + m + f,  # 实际上是 [r_t, gamma, L, V, x_t, m_o0, f0_t]
             outputs=[cost],
             updates=updates)
 
@@ -160,7 +166,8 @@ class Model:
 
                     if mm[0] != f[0]:
                         n_wrong += 1
-                        
+                    # print(self.H[line['answer']]) # answer是词汇表第几个词
+                    print(m + f)
                     err = self.train_model(self.H[line['answer']], self.gamma, memory_list, self.V, id, *(m + f))[0]
                     total_err += err
             print "i: ", i, " nwrong: ", n_wrong
